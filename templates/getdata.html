@@ -38,6 +38,14 @@
             </div>
             <h2> {{infotext}} </h2>
             <div>
+
+            </div>
+            <h2> 
+                {% for tweet in tweets %}
+    <p>{{ tweet }}</p>
+{% endfor %}
+ </h2>
+            <div>
                 <body>
     {% for topicName in topicNames %}
     <p>{{ topicName }}</p>

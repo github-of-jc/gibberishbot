@@ -87,9 +87,8 @@ def add_topic_form():
                 return(str(e))
         else:
             info = "%s is in the db already" % topicName 
-            return render_template("getdata.html", topicNames = topicNames, infotext = info)
-
-    return render_template("getdata.html")
+            return render_template("getdata.html", topicNames = topicNames, infotext = info)               
+    return render_template("getdata.html", topicNames = topicNames, infotext = info)
 
 if __name__ == '__main__':
     app.run()

@@ -66,9 +66,12 @@ def get_by_id(id_):
 def add_topic_form():
     topics = Topic.query.all()
     topicNames = []
+    info = "Add a topic you would like to track"
     for topic in topics:
         topicNames.append(topic.serialize()['topicName'])
+    print(topicNames)
     if request.method == 'POST':
+        print("Post method")
         topicName=request.form.get('topicName')
         if topicName not in topicNames:
             try:
@@ -87,7 +90,8 @@ def add_topic_form():
                 return(str(e))
         else:
             info = "%s is in the db already" % topicName 
-            return render_template("getdata.html", topicNames = topicNames, infotext = info)               
+            return render_template("getdata.html", topicNames = topicNames, infotext = info)   
+    print("returning at the bottom")          
     return render_template("getdata.html", topicNames = topicNames, infotext = info)
 
 if __name__ == '__main__':

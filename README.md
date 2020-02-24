@@ -88,3 +88,6 @@ need a way to refresh the tweet dict
 
 ===viewing window to see changes my the bot===
 has delays of ~5 min
+
+
+===app crash after successful deployment===

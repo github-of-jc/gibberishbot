@@ -8,7 +8,7 @@ import random
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
 from scripts import generate_freq_dict
-tweetFile = './tweets.txt'
+# tweetFile = './tweets.txt'
 app = Flask(__name__)
 
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -75,10 +75,13 @@ def sendTweet(sendTweetCnt):
 
 
     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
-    # TODO: get text from MC function
+    
+    # Get text from MC function====
     actualText = generate_freq_dict(tweetFile)
     print("sendTweet actualText: %s" % actualText)
     tweetText = actualText + " " + str(sendTweetCnt)
+# =====
+
     api.update_status(tweetText)
     print("if success, should send \"%s\" to account" % tweetText)
 

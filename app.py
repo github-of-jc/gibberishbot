@@ -7,7 +7,7 @@ import random
 # make sure to use the up-to-date import formet: from flast_module import Module
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
-from scripts import generate_freq_dict
+# from scripts import generate_freq_dict
 tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
 app = Flask(__name__)
 
@@ -69,12 +69,12 @@ def activate_job():
     thread = threading.Thread(target=run_job)
     thread.start()
 
-def sendTweet(sendTweetCnt):
-    print("in sendTweet")
-    print("sendTweetCnt: %s" % sendTweetCnt)
+# def sendTweet(sendTweetCnt):
+#     print("in sendTweet")
+#     print("sendTweetCnt: %s" % sendTweetCnt)
 
 
-    tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
+#     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
 
     # Get text from MC function====
     # actualText = generate_freq_dict(tweetFile)
@@ -82,8 +82,8 @@ def sendTweet(sendTweetCnt):
     # tweetText = actualText + " " + str(sendTweetCnt)
 # =====
 
-    api.update_status(tweetText)
-    print("if success, should send \"%s\" to account" % tweetText)
+    # api.update_status(tweetText)
+    # print("if success, should send \"%s\" to account" % tweetText)
 
 def likeTweet():
     topics = Topic.query.all()

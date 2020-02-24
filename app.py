@@ -62,19 +62,19 @@ def activate_job():
             likeTweet()
             sendTweetCnt += 1
 
-            # sendTweet(sendTweetCnt)
+            sendTweet(sendTweetCnt)
             print("sent last tweet, sleeping 100")
             time.sleep(10)
 
     thread = threading.Thread(target=run_job)
     thread.start()
 
-# def sendTweet(sendTweetCnt):
-#     print("in sendTweet")
-#     print("sendTweetCnt: %s" % sendTweetCnt)
+def sendTweet(sendTweetCnt):
+    print("in sendTweet")
+    print("sendTweetCnt: %s" % sendTweetCnt)
 
 
-#     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
+    tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
 
     # Get text from MC function====
     # actualText = generate_freq_dict(tweetFile)
@@ -82,8 +82,8 @@ def activate_job():
     # tweetText = actualText + " " + str(sendTweetCnt)
 # =====
 
-    # api.update_status(tweetText)
-    # print("if success, should send \"%s\" to account" % tweetText)
+    api.update_status(tweetText)
+    print("if success, should send \"%s\" to account" % tweetText)
 
 def likeTweet():
     topics = Topic.query.all()

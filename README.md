@@ -5,7 +5,31 @@ git push prod master
 heroku run python manage.py db upgrade --app gibberishbot
 
 ===import new package and commit to heroku===
+source env/bin/activate
+pip install Flask
+export APP_SETTINGS="config.DevelopmentConfig"
+export DATABASE_URL="postgresql://postgres:1ady1ight&@localhost:5433/books_store"
+pip install flask_sqlalchemy
+pip install flask_script
+ pip install flask_migrate
+pip install psycopg2-binary
+
+open postgresql ui
+click on book_store
+\dt to see the tables
+dropgi table alembic_version;
+drop table topics;
+
+
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
+python manage.py runserver
+pip install gunicorn
+
 pip freeze > requirements.txt
+
+
 git add .
 git commit -m "my msg"
 git push prod master
@@ -37,13 +61,13 @@ source venv/bin/activate
 open postgresql ui
 click on book_store
 \dt to see the tables
-drop table alembic_version
-drop table topics
+dropgi table alembic_version;
+drop table topics;
 
 make sure app_Settings is pointing to an existing db
 python manage.py db init
-migrate
-upgrade
+python manage.py db migrate
+python manage.py db upgrade
 
 
 to run

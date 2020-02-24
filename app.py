@@ -8,7 +8,7 @@ import random
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
 from scripts import generate_freq_dict
-# tweetFile = './tweets.txt'
+tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
 app = Flask(__name__)
 
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -75,7 +75,7 @@ def sendTweet(sendTweetCnt):
 
 
     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
-    
+
     # Get text from MC function====
     actualText = generate_freq_dict(tweetFile)
     print("sendTweet actualText: %s" % actualText)

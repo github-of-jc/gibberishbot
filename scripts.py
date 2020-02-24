@@ -79,9 +79,9 @@ def generate_freq_dict(tweetFile):
 	return finalstr
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-# 	tweetFile = './tweets.txt'
-# 	actualText = generate_freq_dict(tweetFile)
-# 	print(actualText)
-# 	print("end of generate_freq_dict")
+	tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
+	actualText = generate_freq_dict(tweetFile)
+	print(actualText)
+	print("end of generate_freq_dict")

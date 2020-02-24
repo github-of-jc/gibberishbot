@@ -1,9 +1,13 @@
 import os
+import threading, time
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+import random
+
 # make sure to use the up-to-date import formet: from flast_module import Module
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
+tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
 
 app = Flask(__name__)
 
@@ -24,6 +28,8 @@ db = SQLAlchemy(app)
 print("tweepy")
 print(tweepy)
 
+isLiking = False
+
 class Topic(db.Model):
     __tablename__ = 'topics'
 
@@ -43,9 +49,75 @@ class Topic(db.Model):
             'topicName': self.topicName
         }
 
-@app.route("/")
-def hello():
-    return "Hello World!"
+# @app.route("/")
+# def hello():
+#     return "Hello World!"
+
+@app.before_first_request
+def activate_job():
+    def run_job():
+        while True:
+            print("Run recurring task")
+            likeTweet()
+
+            time.sleep(5)
+
+    thread = threading.Thread(target=run_job)
+    thread.start()
+
+def likeTweet():
+    topics = Topic.query.all()
+    topicNames = ""
+    for topic in topics:
+        print(type(topic))
+        tpn = topic.serialize()['topicName'].encode('ascii', 'ignore')
+        print(type(tpn))
+        topicNames=topicNames + ' OR ' + tpn
+    print("topics from db: %s" % topicNames)
+
+    query = topicNames
+    print("query: %s" % query)
+    count = 100
+    last_id = -1
+    print("in likeTweet")
+    new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
+    print("new_tweets len: %s" % len(new_tweets))
+    for t in new_tweets:
+        print(type(t))
+        print(t.text)
+        with open(tweetFile, 'a') as f:
+            f.write(t.text.encode('ascii', 'ignore') + '\n')
+    r = int(random.random() * count)
+    print("random:" + str(r))
+    print(new_tweets[r].text)
+
+
+def start_runner():
+    print("start runner")
+    def start_loop():
+        print("in start loop")
+        not_started = True
+        while not_started:
+            print('In start loop, isLiking is %s' % isLiking)
+            try:
+                r = requests.get('http://127.0.0.1:5000/')
+                if r.status_code == 200:
+                    print('Server started, quiting start_loop')
+                    not_started = False
+                print(r.status_code)
+            except:
+                print('Server not yet started')
+            time.sleep(2)
+
+    print('Started runner')
+    thread = threading.Thread(target=start_loop)
+    thread.start()
+
+def generate_freq_dict():
+    freq_dict = {}
+    with open(tweetFile, 'r') as f:
+        line = f.readline()
+        print(line)
 
 @app.route('/tweets')
 def show_tweets():
@@ -56,6 +128,7 @@ def show_tweets():
     topicNames = ["no topics"]
     info = "no infotext"
     return render_template("getdata.html", topicNames = topicNames, infotext = info, tweets = tweets)
+
 
 
 @app.route("/add")
@@ -87,7 +160,7 @@ def get_by_id(id_):
     except Exception as e:
         return(str(e))
 
-@app.route("/add/form",methods=['GET', 'POST'])
+@app.route("/",methods=['GET', 'POST'])
 def add_topic_form():
     topics = Topic.query.all()
     topicNames = []
@@ -119,5 +192,7 @@ def add_topic_form():
     print("returning at the bottom")          
     return render_template("getdata.html", topicNames = topicNames, infotext = info)
 
+
 if __name__ == '__main__':
+    # start_runner()
     app.run()

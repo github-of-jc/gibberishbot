@@ -83,6 +83,10 @@ test the tweet function -- works
 
 need a way to refresh the tweet dict
 
+added a tweetText table to store all the texts
+
+this table should be refreshed entirely everytime gen_str is called
+
 
 
 
@@ -95,6 +99,4 @@ has delays of ~5 min
 heroku releases --app gibberishbot
 
 heroku rollback v23 --app gibberishbot
-
-heroku logs --app gibberishbot
 

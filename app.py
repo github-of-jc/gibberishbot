@@ -3,6 +3,8 @@ import threading, time
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import random
+import operator
+
 
 # make sure to use the up-to-date import formet: from flast_module import Module
 # DO NOT use deprecated from flask.ext.module import Module
@@ -49,9 +51,112 @@ class Topic(db.Model):
             'topicName': self.topicName
         }
 
+
+class TweetText(db.Model):
+    __tablename__ = 'tweetText'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tweetText = db.Column(db.String())
+
+    def __init__(self, tweetText):
+        self.tweetText = tweetText
+
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
+    
+    def serialize(self):
+        return {
+            'id': self.id, 
+            'tweetText': self.tweetText
+        }
+
 # @app.route("/")
 # def hello():
 #     return "Hello World!"
+
+def generate_freq_dict(tweetFile):
+    freq_dict = {}
+    beginning_dict = {}
+    tweetTextLst = []
+    tweets = TweetText.query.all()
+    partialTts = tweets[:10]
+
+
+
+    for tts in partialTts:
+        print("----")
+        print(tts.tweetText)
+        line = tts.tweetText
+        lst = line.strip().replace(",", " ").replace(".", " ").replace("@", "").split(" ")
+        lst = list(filter(None, lst))
+        if len(lst) < 3:
+            continue
+        # print(lst)
+        if len(lst) > 0:
+            if lst[0].lower() in beginning_dict:
+                beginning_dict[lst[0].lower()] += 1
+            else:
+                beginning_dict[lst[0].lower()] = 1
+        for i in range(len(lst)-1):
+            if lst[i].lower() not in freq_dict:
+                tmp_dict = dict()
+                tmp_dict[lst[i+1].lower()] = 1
+                freq_dict[lst[i].lower()] = tmp_dict
+            else:
+                tmp_dict = freq_dict[lst[i].lower()]
+                if lst[i+1].lower() not in tmp_dict:
+                    tmp_dict[lst[i+1].lower()] = 1
+                else:
+                    tmp_dict[lst[i+1].lower()] += 1
+        # print(freq_dict)
+    # print(beginning_dict)
+    beg = max(beginning_dict.iteritems(), key=operator.itemgetter(1))[0]
+    # print(beg)
+    cnt = 0
+    finalstr = ""
+    maxNext = beg
+    while cnt < 50 and maxNext in freq_dict:
+        # print(cnt)
+        # guess the next word
+        finalstr += " " + maxNext
+        word_dict = freq_dict[maxNext]
+        # print("word_dict")
+        # print(word_dict)
+        maxNext= max(word_dict.iteritems(), key=operator.itemgetter(1))[0]
+        print("next: %s" % maxNext)
+        word_dict[maxNext] = 0
+        cnt += 1
+    finalstr = finalstr + " " + maxNext
+
+    print("finalstr")
+    print(finalstr)
+    if len(finalstr) < 35:
+        beginning_dict[beg] = 0
+        beg = max(beginning_dict.iteritems(), key=operator.itemgetter(1))[0]
+        # print(beg)
+        cnt = 0
+        finalstr = finalstr + "."
+        maxNext = beg
+        while cnt < 50 and maxNext in freq_dict:
+            # print(cnt)
+            # guess the next word
+            finalstr += " " + maxNext
+            word_dict = freq_dict[maxNext]
+            # print("word_dict")
+            # print(word_dict)
+            maxNext= max(word_dict.iteritems(), key=operator.itemgetter(1))[0]
+            word_dict[maxNext] = 0
+
+            print("next: %s" % maxNext)
+            cnt += 1
+
+        finalstr = finalstr + " " + maxNext
+    print("finalstr")
+    print(finalstr)
+    print("bottom of generate_freq_dict")
+    return finalstr
+
 
 @app.before_first_request
 def activate_job():
@@ -64,7 +169,7 @@ def activate_job():
 
             sendTweet(sendTweetCnt)
             print("sent last tweet, sleeping 100")
-            time.sleep(10)
+            time.sleep(20)
 
     thread = threading.Thread(target=run_job)
     thread.start()
@@ -77,13 +182,16 @@ def sendTweet(sendTweetCnt):
     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
 
     # Get text from MC function====
-    # actualText = generate_freq_dict(tweetFile)
-    # print("sendTweet actualText: %s" % actualText)
-    # tweetText = actualText + " " + str(sendTweetCnt)
+    actualText = generate_freq_dict(tweetFile)
+    print("sendTweet actualText: %s" % actualText)
+    tweetText = actualText + " " + str(sendTweetCnt)
 # =====
+    try:
+        api.update_status(tweetText)
+        print("if success, should send \"%s\" to account" % tweetText)
+    except Exception as e:
+            return(str(e))
 
-    api.update_status(tweetText)
-    print("if success, should send \"%s\" to account" % tweetText)
 
 def likeTweet():
     topics = Topic.query.all()
@@ -105,11 +213,35 @@ def likeTweet():
     new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
     print("new_tweets len: %s" % len(new_tweets))
 
-    for t in new_tweets:
+    # delete all old records
+    try:
+        TweetText.query.filter(TweetText.id>=0).delete()
+        db.session.commit()
+    except Exception as e:
+            return(str(e))
+
+    for t in new_tweets[:10]:
         # print(type(t))
         # print(t.text)
-        with open(tweetFile, 'w') as f:
-            f.write(t.text.encode('ascii', 'ignore') + '\n')
+        # with open(tweetFile, 'w') as f:
+        #     f.write(t.text.encode('ascii', 'ignore') + '\n')
+        print("t is===: %s" % t)
+        text = t.text.encode('ascii', 'ignore')
+        print("new_tweets===: %s: " % text)
+        try:
+            tweetRow=TweetText(
+                tweetText=text
+            )
+            db.session.add(tweetRow)
+            db.session.commit()
+            # topics = Topic.query.all()
+            # topicNames = []
+            # for topic in topics:
+            #     topicNames.append(topic.serialize()['topicName'])
+            info = "Added %s to db" % tweetRow
+            print(info) 
+        except Exception as e:
+            return(str(e))
     r = int(random.random() * count)
     print("random:" + str(r))
     print(new_tweets[r].text)

@@ -64,7 +64,7 @@ def activate_job():
 
             sendTweet(sendTweetCnt)
             print("sent last tweet, sleeping 100")
-            time.sleep(100)
+            time.sleep(10)
 
     thread = threading.Thread(target=run_job)
     thread.start()

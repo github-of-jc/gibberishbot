@@ -79,3 +79,12 @@ python manage.py runserver
 2. pull all the tweets from that topic -- store into a txt file maybe
 3. generate a tweet based on all the topic tweets -- do offline mkv analysis separately
 
+test the tweet function -- works
+
+need a way to refresh the tweet dict
+
+
+
+
+===viewing window to see changes my the bot===
+has delays of ~5 min

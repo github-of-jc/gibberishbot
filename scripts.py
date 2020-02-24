@@ -9,7 +9,7 @@ def generate_freq_dict(tweetFile):
 	        print("----")
 	        print(line)
 	        line = f.readline()
-	        lst = line.strip().replace(",", " ").replace(".", " ").split(" ")
+	        lst = line.strip().replace(",", " ").replace(".", " ").replace("@", "").split(" ")
 	        lst = list(filter(None, lst))
 	        if len(lst) < 3:
 	        	continue
@@ -75,9 +75,13 @@ def generate_freq_dict(tweetFile):
 		finalstr = finalstr + " " + maxNext
 	print("finalstr")
 	print(finalstr)
+	print("bottom of generate_freq_dict")
+	return finalstr
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-	tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
-	generate_freq_dict(tweetFile)
+# 	tweetFile = './tweets.txt'
+# 	actualText = generate_freq_dict(tweetFile)
+# 	print(actualText)
+# 	print("end of generate_freq_dict")

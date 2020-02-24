@@ -7,8 +7,8 @@ import random
 # make sure to use the up-to-date import formet: from flast_module import Module
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
-tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
-
+from scripts import generate_freq_dict
+tweetFile = './tweets.txt'
 app = Flask(__name__)
 
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -56,14 +56,31 @@ class Topic(db.Model):
 @app.before_first_request
 def activate_job():
     def run_job():
+        sendTweetCnt = 0
         while True:
             print("Run recurring task")
             likeTweet()
+            sendTweetCnt += 1
 
-            time.sleep(5)
+            sendTweet(sendTweetCnt)
+            print("sent last tweet, sleeping 100")
+            time.sleep(100)
 
     thread = threading.Thread(target=run_job)
     thread.start()
+
+def sendTweet(sendTweetCnt):
+    print("in sendTweet")
+    print("sendTweetCnt: %s" % sendTweetCnt)
+
+
+    tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
+    # TODO: get text from MC function
+    actualText = generate_freq_dict(tweetFile)
+    print("sendTweet actualText: %s" % actualText)
+    tweetText = actualText + " " + str(sendTweetCnt)
+    api.update_status(tweetText)
+    print("if success, should send \"%s\" to account" % tweetText)
 
 def likeTweet():
     topics = Topic.query.all()
@@ -82,10 +99,10 @@ def likeTweet():
     print("in likeTweet")
     new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
     print("new_tweets len: %s" % len(new_tweets))
-    for t in new_tweets:
-        print(type(t))
-        print(t.text)
-        with open(tweetFile, 'a') as f:
+    with open(tweetFile, 'w') as f:
+        for t in new_tweets:
+        # print(type(t))
+        # print(t.text)
             f.write(t.text.encode('ascii', 'ignore') + '\n')
     r = int(random.random() * count)
     print("random:" + str(r))
@@ -107,17 +124,12 @@ def start_runner():
                 print(r.status_code)
             except:
                 print('Server not yet started')
-            time.sleep(2)
+            time.sleep(30)
 
     print('Started runner')
     thread = threading.Thread(target=start_loop)
     thread.start()
 
-def generate_freq_dict():
-    freq_dict = {}
-    with open(tweetFile, 'r') as f:
-        line = f.readline()
-        print(line)
 
 @app.route('/tweets')
 def show_tweets():

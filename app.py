@@ -62,7 +62,7 @@ def activate_job():
             likeTweet()
             sendTweetCnt += 1
 
-            sendTweet(sendTweetCnt)
+            # sendTweet(sendTweetCnt)
             print("sent last tweet, sleeping 100")
             time.sleep(10)
 
@@ -77,9 +77,9 @@ def sendTweet(sendTweetCnt):
     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
 
     # Get text from MC function====
-    actualText = generate_freq_dict(tweetFile)
-    print("sendTweet actualText: %s" % actualText)
-    tweetText = actualText + " " + str(sendTweetCnt)
+    # actualText = generate_freq_dict(tweetFile)
+    # print("sendTweet actualText: %s" % actualText)
+    # tweetText = actualText + " " + str(sendTweetCnt)
 # =====
 
     api.update_status(tweetText)
@@ -102,10 +102,11 @@ def likeTweet():
     print("in likeTweet")
     new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
     print("new_tweets len: %s" % len(new_tweets))
-    with open(tweetFile, 'w') as f:
-        for t in new_tweets:
+
+    for t in new_tweets:
         # print(type(t))
         # print(t.text)
+        with open(tweetFile, 'w') as f:
             f.write(t.text.encode('ascii', 'ignore') + '\n')
     r = int(random.random() * count)
     print("random:" + str(r))

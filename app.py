@@ -8,7 +8,7 @@ import random
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
 # from scripts import generate_freq_dict
-tweetFile = '/Users/stellawander/Downloads/finalform/tweets.txt'
+tweetFile = '/tweets.txt'
 app = Flask(__name__)
 
 app.config.from_object(os.environ['APP_SETTINGS'])

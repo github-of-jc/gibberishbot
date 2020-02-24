@@ -89,10 +89,12 @@ def likeTweet():
     topics = Topic.query.all()
     topicNames = ""
     for topic in topics:
-        print(type(topic))
+        print("topic:")
+        print(topic)
         tpn = topic.serialize()['topicName'].encode('ascii', 'ignore')
+        print("type(tpn)")
         print(type(tpn))
-        topicNames=topicNames + ' OR ' + tpn
+        topicNames=str(topicNames) + ' OR ' + str(tpn)
     print("topics from db: %s" % topicNames)
 
     query = topicNames

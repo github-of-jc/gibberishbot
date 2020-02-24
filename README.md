@@ -91,3 +91,10 @@ has delays of ~5 min
 
 
 ===app crash after successful deployment===
+
+heroku releases --app gibberishbot
+
+heroku rollback v23 --app gibberishbot
+
+heroku logs --app gibberishbot
+

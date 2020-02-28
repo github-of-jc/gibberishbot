@@ -162,6 +162,7 @@ def generate_freq_dict(tweetFile):
 def activate_job():
     def run_job():
         sendTweetCnt = 0
+        wait = 5
         while True:
             print("Run recurring task")
             likeTweet()
@@ -169,8 +170,8 @@ def activate_job():
             if sendTweetCnt % 5 == 0:
                 print("sendTweetCnt: %s, time to send" % sendTweetCnt)
                 sendTweet(sendTweetCnt)
-                print("sent last tweet, sleeping 100")
-            time.sleep(200)
+                print("sent last tweet, sleeping %s" % wait)
+            time.sleep(wait)
 
     thread = threading.Thread(target=run_job)
     thread.start()

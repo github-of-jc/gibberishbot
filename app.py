@@ -80,7 +80,7 @@ def generate_freq_dict(tweetFile):
     beginning_dict = {}
     tweetTextLst = []
     tweets = TweetText.query.all()
-    partialTts = tweets[:10]
+    partialTts = tweets
 
 
 
@@ -166,10 +166,11 @@ def activate_job():
             print("Run recurring task")
             likeTweet()
             sendTweetCnt += 1
-
-            sendTweet(sendTweetCnt)
-            print("sent last tweet, sleeping 100")
-            time.sleep(20)
+            if sendTweetCnt % 5 == 0:
+                print("sendTweetCnt: %s, time to send" % sendTweetCnt)
+                sendTweet(sendTweetCnt)
+                print("sent last tweet, sleeping 100")
+            time.sleep(200)
 
     thread = threading.Thread(target=run_job)
     thread.start()
@@ -220,7 +221,7 @@ def likeTweet():
     except Exception as e:
             return(str(e))
 
-    for t in new_tweets[:10]:
+    for t in new_tweets:
         # print(type(t))
         # print(t.text)
         # with open(tweetFile, 'w') as f:

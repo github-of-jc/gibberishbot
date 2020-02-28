@@ -71,15 +71,20 @@ class TweetText(db.Model):
             'tweetText': self.tweetText
         }
 
-# @app.route("/")
-# def hello():
-#     return "Hello World!"
+@app.route("/")
+def hello():
+    return "goto main and start using"
 
 def generate_freq_dict(tweetFile):
     freq_dict = {}
     beginning_dict = {}
     tweetTextLst = []
-    tweets = TweetText.query.all()
+    try:
+        tweets = TweetText.query.all()
+    except:
+         return "no tweets in db"
+    if len(tweets) < 10:
+        return "not enough tweets in db"
     partialTts = tweets
 
 
@@ -162,7 +167,7 @@ def generate_freq_dict(tweetFile):
 def activate_job():
     def run_job():
         sendTweetCnt = 0
-        wait = 5
+        wait = 500
         while True:
             print("Run recurring task")
             likeTweet()
@@ -197,6 +202,9 @@ def sendTweet(sendTweetCnt):
 
 def likeTweet():
     topics = Topic.query.all()
+    if len(topics) == 0:
+        print("no topics, nothing to like")
+        return
     topicNames = ""
     for topic in topics:
         print("topic:")
@@ -227,9 +235,9 @@ def likeTweet():
         # print(t.text)
         # with open(tweetFile, 'w') as f:
         #     f.write(t.text.encode('ascii', 'ignore') + '\n')
-        print("t is===: %s" % t)
+        # print("t is===: %s" % t)
         text = t.text.encode('ascii', 'ignore')
-        print("new_tweets===: %s: " % text)
+        # print("new_tweets===: %s: " % text)
         try:
             tweetRow=TweetText(
                 tweetText=text
@@ -312,7 +320,7 @@ def get_by_id(id_):
     except Exception as e:
         return(str(e))
 
-@app.route("/",methods=['GET', 'POST'])
+@app.route("/main",methods=['GET', 'POST'])
 def add_topic_form():
     topics = Topic.query.all()
     topicNames = []
@@ -346,5 +354,5 @@ def add_topic_form():
 
 
 if __name__ == '__main__':
-    # start_runner()
+    start_runner()
     app.run()

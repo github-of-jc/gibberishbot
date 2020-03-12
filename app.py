@@ -18,8 +18,8 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-auth = tweepy.OAuthHandler('R4M3HyEF5FcDbdd0s3Xyohdeq', 'KpWOI1udl9gXDJow3mGx9yK9OPncqZ0PvMs8whdWfHEyEImPCy')
-auth.set_access_token('1198415155752849409-XLDpSZ3irzZQGhP1CUKs27Xgfey1Me', 'tH2lp62ZgqSC4KE70VXJ6vSfHuyudXS3Br7uKTOcG5Dj9')
+auth = tweepy.OAuthHandler('secret', 'secret')
+auth.set_access_token('secret', 'secret')
 
 api = tweepy.API(auth)
 

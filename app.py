@@ -4,20 +4,22 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import random
 import operator
+from datetime import datetime
+import markovify
 
 
 # make sure to use the up-to-date import formet: from flast_module import Module
 # DO NOT use deprecated from flask.ext.module import Module
 import tweepy
 # from scripts import generate_freq_dict
-tweetFile = '/tweets.txt'
+tweetFile = 'tweets.txt'
 app = Flask(__name__)
 
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-auth = tweepy.OAuthHandler('secret', 'secret')
-auth.set_access_token('secret', 'secret')
+auth = tweepy.OAuthHandler('R4M3HyEF5FcDbdd0s3Xyohdeq', 'KpWOI1udl9gXDJow3mGx9yK9OPncqZ0PvMs8whdWfHEyEImPCy')
+auth.set_access_token('1198415155752849409-XLDpSZ3irzZQGhP1CUKs27Xgfey1Me', 'tH2lp62ZgqSC4KE70VXJ6vSfHuyudXS3Br7uKTOcG5Dj9')
 
 api = tweepy.API(auth)
 
@@ -111,7 +113,11 @@ def generate_freq_dict(tweetFile):
                     tmp_dict[lst[i+1].lower()] += 1
         # print(freq_dict)
     # print(beginning_dict)
-    beg = max(beginning_dict.iteritems(), key=operator.itemgetter(1))[0]
+    try:
+        beg = max(beginning_dict.iteritems(), key=operator.itemgetter(1))[0]
+    except:
+        print("error with getting beg")
+        return "this is a fabulous day"
     # print(beg)
     cnt = 0
     finalstr = ""
@@ -162,12 +168,17 @@ def generate_freq_dict(tweetFile):
 def activate_job():
     def run_job():
         sendTweetCnt = 0
-        wait = 500
+        wait = 1
         while True:
             print("Run recurring task")
-            likeTweet()
+            refresh_txt()
             sendTweetCnt += 1
-            if sendTweetCnt % 5 == 0:
+            if sendTweetCnt == 2:
+                sendTweet(sendTweetCnt)
+            if sendTweetCnt % 2 == 0:
+                refresh_txt()
+            print("send cnt: %s" % sendTweetCnt)
+            if sendTweetCnt % 2 == 0:
                 print("sendTweetCnt: %s, time to send" % sendTweetCnt)
                 sendTweet(sendTweetCnt)
                 print("sent last tweet, sleeping %s" % wait)
@@ -184,15 +195,33 @@ def sendTweet(sendTweetCnt):
     tweetText = "testing tweet plz don't take me serious :/ %s" % sendTweetCnt
 
     # Get text from MC function====
-    actualText = generate_freq_dict(tweetFile)
-    print("sendTweet actualText: %s" % actualText)
-    tweetText = actualText + " " + str(sendTweetCnt)
+    # actualText = generate_freq_dict(tweetFile)
+    start = datetime.now()
+    print("markov start: %s" % start)
+
+    print("Reading text")
+    with open(tweetFile) as f:
+        text = f.read()
+
+    # build model
+    print("build model")
+    text_model = markovify.Text(text)
+
+    print("text_model make")
+    actualText = text_model.make_short_sentence(280)
+    if actualText:
+        actualText.replace("@", "at:")
+
+        print("sendTweet actualText: %s" % actualText)
+        tweetText = actualText + " " + str(sendTweetCnt)
 # =====
     try:
         api.update_status(tweetText)
         print("if success, should send \"%s\" to account" % tweetText)
     except Exception as e:
-            return(str(e))
+        print("error in send tweet")
+        print(e)
+        return(str(e))
 
 
 def likeTweet():
@@ -200,7 +229,7 @@ def likeTweet():
     if len(topics) == 0:
         print("no topics, nothing to like")
         return
-    topicNames = ""
+    topicNames = "Nyc"
     for topic in topics:
         print("topic:")
         print(topic)
@@ -215,8 +244,12 @@ def likeTweet():
     count = 100
     last_id = -1
     print("in likeTweet")
-    new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
-    print("new_tweets len: %s" % len(new_tweets))
+    try:
+        new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
+        print("new_tweets len: %s" % len(new_tweets))
+    except:
+        print("error in liketweet line 242")
+        new_tweets = []
 
     # delete all old records
     try:
@@ -247,9 +280,12 @@ def likeTweet():
             print(info) 
         except Exception as e:
             return(str(e))
+
+    # pick a new tweet to like
     r = int(random.random() * count)
     print("random:" + str(r))
-    print(new_tweets[r].text)
+    if new_tweets:
+        print(new_tweets[r].text)
 
 
 def start_runner():
@@ -272,6 +308,82 @@ def start_runner():
     print('Started runner')
     thread = threading.Thread(target=start_loop)
     thread.start()
+
+
+def refresh_txt():
+    # get topics from table
+    # fill db with lines from these topics
+    # convert db into a txt
+    try:
+        TweetText.query.filter(TweetText.id>=0).delete()
+        db.session.commit()
+    except Exception as e:
+        return(str(e))
+
+    with open(tweetFile, "w+") as f:
+        f.write("start of tweetFile")
+
+    topics = Topic.query.all()
+    if len(topics) == 0:
+        print("no topics, nothing to query")
+        return
+    print("topics from db: %s" % topics)
+    topicStr = []
+    for topic in topics:
+        # put each topic's tweets into db
+        print("topic:")
+        print(topic)
+        tpn = topic.serialize()['topicName'].encode('ascii', 'ignore')
+        print("tpn: %s" % tpn)
+        topicStr.append(str(tpn))
+    print("topics from db: %s" % topics)
+
+    for topic in topicStr:
+        query = topic
+        print("querying: %s" % query)
+        count = 100
+        last_id = -1
+        print("in refresh_txt")
+        try:
+            new_tweets = api.search(q=query, count=count, max_id=str(last_id - 1))
+            print("topis: %s new_tweets len: %s" % (topic, len(new_tweets)))
+        except:
+            print("error in refresh_txt line 350")
+            new_tweets = []
+            return
+
+        for t in new_tweets:
+            # print(type(t))
+            # print(t.text)
+            text = t.text.encode('ascii', 'ignore')
+            text = text.replace("@", "at:")
+            if len(text) <40:
+                print("this is too short: %s" % text)
+                continue
+            if "https" in text:
+                print("%s has links, remove" % text)
+                continue
+            print("write to file")
+            with open(tweetFile, 'a+') as f:
+                f.write(text + '\n')
+            # print("t is===: %s" % t)
+            # print("new_tweets===: %s: " % text)
+            try:
+                tweetRow=TweetText(
+                    tweetText=text
+                )
+                db.session.add(tweetRow)
+                db.session.commit()
+                # topics = Topic.query.all()
+                # topicNames = []
+                # for topic in topics:
+                #     topicNames.append(topic.serialize()['topicName'])
+                info = "Added %s to db" % tweetRow
+                print(info) 
+            except Exception as e:
+                return(str(e))
+
+    print("bootom of refresh_txt")
 
 
 @app.route('/tweets')
